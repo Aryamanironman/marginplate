@@ -3,6 +3,7 @@
 import { supabase } from '@/lib/supabaseClient';
 import { computeFoodCostPercentage } from '@/lib/dashboard';
 import { normalize } from '@/lib/units';
+import { ensureSession } from '@/lib/auth';
 import { useEffect, useState } from 'react';
 
 export default function Dashboard() {
@@ -133,6 +134,7 @@ export default function Dashboard() {
       if (alertsError) throw alertsError;
       setAlerts(alertsData);
     } catch (err: any) {
+      if (ensureSession(err)) return;
       console.error(err);
       setError(err.message ?? 'Failed to load dashboard');
     } finally {

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { ensureSession } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 
 export default function NewInvoice() {
@@ -82,6 +83,7 @@ export default function NewInvoice() {
       // For now, just redirect to the invoice page
       router.push(`/invoices/${invoiceData.id}`);
     } catch (err: any) {
+      if (ensureSession(err)) return;
       console.error(err);
       setError(err.message ?? 'An unexpected error occurred');
     } finally {

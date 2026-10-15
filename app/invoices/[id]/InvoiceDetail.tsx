@@ -1,6 +1,7 @@
 'use client';
 
 import { supabase } from '@/lib/supabaseClient';
+import { ensureSession } from '@/lib/auth';
 import { useEffect, useState } from 'react';
 
 export default function InvoiceDetail({ id }: { id: string }) {
@@ -73,6 +74,7 @@ export default function InvoiceDetail({ id }: { id: string }) {
       if (lineItemsError) throw lineItemsError;
       setLineItems(lineItemsData);
     } catch (err: any) {
+      if (ensureSession(err)) return;
       console.error(err);
       setError(err.message ?? 'Failed to load invoice');
     } finally {

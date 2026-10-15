@@ -1,6 +1,7 @@
 'use client';
 
 import { supabase } from '@/lib/supabaseClient';
+import { ensureSession } from '@/lib/auth';
 import { useEffect, useState } from 'react';
 
 export default function SuppliersPage() {
@@ -59,6 +60,7 @@ export default function SuppliersPage() {
 
       setSuppliers(suppliersWithStats);
     } catch (err: any) {
+      if (ensureSession(err)) return;
       console.error(err);
       setError(err.message ?? 'Failed to load suppliers');
     } finally {

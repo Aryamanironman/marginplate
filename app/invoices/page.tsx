@@ -1,6 +1,7 @@
 'use client';
 
 import { supabase } from '@/lib/supabaseClient';
+import { ensureSession } from '@/lib/auth';
 import { useEffect, useState } from 'react';
 
 export default function InvoicesPage() {
@@ -47,6 +48,7 @@ export default function InvoicesPage() {
       if (invoicesError) throw invoicesError;
       setInvoices(invoicesData);
     } catch (err: any) {
+      if (ensureSession(err)) return;
       console.error(err);
       setError(err.message ?? 'Failed to fetch invoices');
     } finally {

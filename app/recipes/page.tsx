@@ -3,6 +3,7 @@
 import { supabase } from '@/lib/supabaseClient';
 import { costPerPlate } from '@/lib/costing';
 import { normalize } from '@/lib/units';
+import { ensureSession } from '@/lib/auth';
 import { useEffect, useState } from 'react';
 
 export default function RecipesPage() {
@@ -167,6 +168,7 @@ export default function RecipesPage() {
       
       setRecipes(recipesWithCost);
     } catch (err: any) {
+      if (ensureSession(err)) return;
       console.error(err);
       setError(err.message ?? 'Failed to load recipes');
     } finally {

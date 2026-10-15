@@ -2,6 +2,7 @@
 
 import { supabase } from '@/lib/supabaseClient';
 import { detectCreep } from '@/lib/creep';
+import { ensureSession } from '@/lib/auth';
 import { useEffect, useState } from 'react';
 
 export default function AlertsPage() {
@@ -127,6 +128,7 @@ export default function AlertsPage() {
       setAlerts(computedAlerts);
       setResolvedAlerts([]); // Placeholder
     } catch (err: any) {
+      if (ensureSession(err)) return;
       console.error(err);
       setError(err.message ?? 'Failed to load alerts');
     } finally {
