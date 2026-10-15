@@ -1,5 +1,8 @@
+'use client';
+
 import { supabase } from '@/lib/supabaseClient';
 import { computeFoodCostPercentage } from '@/lib/dashboard';
+import { normalize } from '@/lib/units';
 import { useEffect, useState } from 'react';
 
 export default function Dashboard() {
@@ -89,21 +92,21 @@ export default function Dashboard() {
       for (const r of recipesData) {
         let totalCost = 0;
         for (const comp of r.recipe_components) {
-          // comp.ingredients is an array of exactly one element due to inner join
-          const ingredient = comp.ingredients[0];
+          // to-one embeds may come back as an object (PostgREST) or a one-element array (types)
+          const ingredient = Array.isArray(comp.ingredients) ? comp.ingredients[0] : comp.ingredients;
           const unitCost = latestCosts.get(ingredient.id);
           if (unitCost === undefined) {
             // If missing cost, skip or assume 0? We'll assume 0 for now.
             continue;
           }
-          const usableQty = comp.qty * comp.yield_factor;
-          // We need to convert from comp.unit to ingredient.canonical_unit using unit_map.
-          // For simplicity, we assume the unit_map table is available and we can query it.
-          // We'll implement a simple conversion function.
-          const conversionFactor = 1; // TODO: implement proper conversion using unitMapData.data
-          // For now, we assume the unit is already canonical (or we ignore conversion).
-          // This is a placeholder; in a real implementation we would use the unit_map.
-          totalCost += usableQty * unitCost * conversionFactor;
+          let canonicalQty: number;
+          try {
+            canonicalQty = normalize(comp.qty, comp.unit, ingredient.canonical_unit, unitMapData.data);
+          } catch {
+            // Unmappable unit: skip this ingredient rather than price it wrong
+            continue;
+          }
+          totalCost += canonicalQty * comp.yield_factor * unitCost;
         }
         const marginPct = ((r.sale_price - totalCost) / r.sale_price) * 100;
         recipesWithCost.push({

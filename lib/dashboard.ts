@@ -70,8 +70,8 @@ export async function fetchRecipesWithComponents(orgId: string) {
     const recipe = recipesMap.get(r.id);
     // r.recipe_components is an array of component objects
     for (const comp of r.recipe_components) {
-      // comp.ingredients is an array of exactly one element due to inner join
-      const ingredient = comp.ingredients[0];
+      // to-one embeds may come back as an object (PostgREST) or a one-element array (types)
+      const ingredient = Array.isArray(comp.ingredients) ? comp.ingredients[0] : comp.ingredients;
       recipe.components.push({
         qty: comp.qty,
         unit: comp.unit,
@@ -107,13 +107,13 @@ export async function computeRecipeCost(
     });
   }
 
-  // Build the recipe object expected by costPerPlate
+  // Build the recipe object expected by costPerPlate; qty converted to canonical units first
   const recipeObj = {
     salePrice: recipe.salePrice,
     components: recipe.components.map((comp: any) => ({
       ingredient_id: comp.ingredient_id,
-      qty: comp.qty,
-      unit: comp.unit,
+      qty: normalize(comp.qty, comp.unit, comp.canonical_unit, unitMap),
+      unit: comp.canonical_unit,
       yield_factor: comp.yield_factor,
     })),
   };
@@ -123,7 +123,7 @@ export async function computeRecipeCost(
 
 /**
  * Compute the overall food-cost percentage for the organization.
- * We define it as the average of (1 - cost/salePrice) across all recipes.
+ * We define it as the average of (cost/salePrice) across all recipes.
  * Alternatively, we could compute a weighted average by some usage metric,
  * but we don't have sales data. We'll use the simple average.
  */
@@ -136,22 +136,30 @@ export async function computeFoodCostPercentage(orgId: string) {
     ]);
 
     if (recipes.length === 0) {
-      return 0;
+      return null;
     }
 
     let totalFoodCostPct = 0;
     let count = 0;
 
     for (const recipe of recipes) {
-      const result = await computeRecipeCost(recipe, ingredientCosts, unitMap);
-      const foodCostPct = (1 - result.cost / recipe.salePrice) * 100;
-      totalFoodCostPct += foodCostPct;
-      count++;
+      try {
+        const result = await computeRecipeCost(recipe, ingredientCosts, unitMap);
+        const foodCostPct = (result.cost / recipe.salePrice) * 100;
+        totalFoodCostPct += foodCostPct;
+        count++;
+      } catch (err) {
+        // A recipe with missing cost or unmappable unit is skipped, not averaged in
+        console.error(`Skipping recipe "${recipe.menu_item_name}":`, err);
+      }
     }
 
+    if (count === 0) {
+      return null;
+    }
     return totalFoodCostPct / count;
   } catch (err) {
     console.error('Error computing food-cost percentage:', err);
-    return 0;
+    return null;
   }
 }
