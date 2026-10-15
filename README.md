@@ -88,6 +88,8 @@ Apply the SQL migrations from `supabase/migrations/` to your Supabase project, e
 
 Gate before merge: `npm run typecheck && npm test && npm run build`.
 
+Demo account (production and local after seeding): `maria@test.dev` / `DemoPass2026!`.
+
 ## Screenshots
 
 > `docs/screenshots/` — captured on the production deployment.
