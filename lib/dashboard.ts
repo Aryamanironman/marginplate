@@ -109,7 +109,7 @@ export async function computeRecipeCost(
 
   // Build the recipe object expected by costPerPlate; qty converted to canonical units first
   const recipeObj = {
-    salePrice: recipe.salePrice,
+    salePrice: recipe.sale_price,
     components: recipe.components.map((comp: any) => ({
       ingredient_id: comp.ingredient_id,
       qty: normalize(comp.qty, comp.unit, comp.canonical_unit, unitMap),
@@ -145,7 +145,7 @@ export async function computeFoodCostPercentage(orgId: string) {
     for (const recipe of recipes) {
       try {
         const result = await computeRecipeCost(recipe, ingredientCosts, unitMap);
-        const foodCostPct = (result.cost / recipe.salePrice) * 100;
+        const foodCostPct = (result.cost / recipe.sale_price) * 100;
         totalFoodCostPct += foodCostPct;
         count++;
       } catch (err) {
