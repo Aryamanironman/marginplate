@@ -1,26 +1,37 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  --color-paper: #f8f4e9;
+  --color-paper-deep: #efe8d8;
+  --color-corten: #b84b30;
+  --color-corten-deep: #5f1d1a;
+  --color-corten-hover: #9a3d26;
+  --color-ink: #3e3d3a;
+  --color-ink-muted: #666;
+  --color-ink-faint: #999;
+  --color-surface: #ffffff;
+  --color-line: #3e3d3a1a;
+  --color-ok: #3d5c4a;
+  --color-warn: #a16207;
+  --color-danger: #8b2942;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Instrument Sans", "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+code,
+.label-mono {
+  font-family: var(--font-mono);
 }
