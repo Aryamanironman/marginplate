@@ -86,10 +86,12 @@ export default function Dashboard() {
 
       // Compute cost for each recipe
       const recipesWithCost: Array<{ id: string; menu_item_name: string; sale_price: number; cost: number; marginPct: number }> = [];
-      for (const r of recipesData.data) {
+      for (const r of recipesData) {
         let totalCost = 0;
         for (const comp of r.recipe_components) {
-          const unitCost = latestCosts.get(comp.ingredients.id);
+          // comp.ingredients is an array of exactly one element due to inner join
+          const ingredient = comp.ingredients[0];
+          const unitCost = latestCosts.get(ingredient.id);
           if (unitCost === undefined) {
             // If missing cost, skip or assume 0? We'll assume 0 for now.
             continue;
@@ -126,7 +128,7 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (alertsError) throw alertsError;
-      setAlerts(alertsData.data);
+      setAlerts(alertsData);
     } catch (err: any) {
       console.error(err);
       setError(err.message ?? 'Failed to load dashboard');
